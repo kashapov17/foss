@@ -11,7 +11,6 @@ usage() {
 pkill() {
 	local CLK_TCK=$(getconf CLK_TCK)
 
-
 	while true;
 	do
 		PIDS=$(ps -e -o pid h | head -n -2)
