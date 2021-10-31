@@ -548,6 +548,9 @@ Feb 27 12:12:09 sergey-pc kernel: pci 0000:00:02.0: Video device with shadowed R
 Feb 27 12:12:09 sergey-pc kernel: PCI: CLS 64 bytes, default 64
 Feb 27 12:12:09 sergey-pc kernel: Unpacking initramfs...
 Feb 27 12:12:09 sergey-pc kernel: Freeing initrd memory: 37568K
+Feb 27 12:12:09 sergey-pc kernel: Freeing initrd memory: 999K
+Feb 27 12:12:09 sergey-pc kernel: Freeing initrd memory: 1000K
+Feb 27 12:12:09 sergey-pc kernel: Freeing initrd memory: 1001K
 Feb 27 12:12:09 sergey-pc kernel: PCI-DMA: Using software bounce buffering for IO (SWIOTLB)
 Feb 27 12:12:09 sergey-pc kernel: software IO TLB [mem 0xd473a000-0xd873a000] (64MB) mapped at [ffff8800d473a000-ffff8800d8739fff]
 Feb 27 12:12:09 sergey-pc kernel: RAPL PMU detected, API unit is 2^-32 Joules, 4 fixed counters 655360 ms ovfl timer
