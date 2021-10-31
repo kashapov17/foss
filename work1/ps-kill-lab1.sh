@@ -17,7 +17,8 @@ pkill() {
  		echo "Found $(echo $PIDS | wc -w) processes"
 		for P in $PIDS
 		do
-			if [[ $(echo "$(cat /proc/$P/stat 2>&1 | awk '{print $14}' ) / $CLK_TCK" | bc) -gt $USER_TIME ]]; then
+			UTIME=$(cat /proc/$P/stat 2>&1 | awk '{print $14}')
+			if [[ ! -z $UTIME ]] && [[ $(echo "$UTIME / $(getconf CLK_TCK)" | bc) -gt $1 ]]; then
 				kill $P
 				echo "$(date +%s) $P was killed\\n" >> $LOG_FILE
 			fi
