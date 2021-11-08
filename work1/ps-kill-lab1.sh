@@ -18,9 +18,9 @@ pkill() {
 		for P in $PIDS
 		do
 			UTIME=$(cat /proc/$P/stat 2>&1 | awk '{print $14}')
-			if [[ ! -z $UTIME ]] && [[ $(echo "$UTIME / $(getconf CLK_TCK)" | bc) -gt $1 ]]; then
-				kill $P
-				echo "$(date +%s) $P was killed\\n" >> $LOG_FILE
+			if [[ -n $UTIME ]] && [[ $(echo "$UTIME / $CLK_TCK" | bc) -gt $USER_TIME ]]; then
+				#kill $P
+				echo "$(date +%s) $P was killed" >> $LOG_FILE
 			fi
 		done
 	done
@@ -31,3 +31,4 @@ if [ -z $1 ] || [ -z $2 ]; then
 fi
 
 pkill
+
