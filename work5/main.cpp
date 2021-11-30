@@ -15,28 +15,27 @@ using row=std::vector<int>;
 class matrix
 {
 public:
-    explicit matrix(std::ifstream &ist) {
+    explicit matrix(std::ifstream &ist, std::ostream &ost) {
         m = load(ist);
-        int shmid = shmget(IPC_PRIVATE, sizeof(matrixData), IPC_CREAT|0666);
+
+        shmid = shmget(IPC_PRIVATE, sizeof(matrixData), IPC_CREAT|0666);
         if (shmid == -1) {
             throw "Bad memory allocation";
         }
+        ost << "Shared memory object ID " << shmid << " was allocated\n";
+
         semid = semget(IPC_PRIVATE, 1, IPC_CREAT|0666);
         if (semid == -1) {
             throw "Bad semaphore allocation";
         }
+        ost << "Semaphore ID " << semid << " was allocated\n";
+
         semop(semid, &spp, 1);
         mD = (matrixData *)shmat(shmid,NULL,0);
     };
-    ~matrix() = default;
-
-    void print(std::ostream &ost) {
-        for (int i = 0; i < m.size(); i++) {
-            for (int j = 0; j < m.at(0).size(); j++) {
-                ost << m[i][j] << " ";
-            }
-            ost << "\n";
-        }
+    ~matrix() {
+        semctl(semid, 1, IPC_RMID);
+        shmctl(shmid, IPC_RMID, NULL);
     }
 
     void calcMaxMin() {
@@ -58,6 +57,8 @@ public:
             }
             wait(NULL);
         }
+        for (int i=0; i < m.size(); i++)
+            wait(NULL);
     }
 
     int getSumMaxMin() {
@@ -66,8 +67,8 @@ public:
 
 private:
     M m;
-    int *sum;
     int semid;
+    int shmid;
     struct matrixData
     {
         int max;
@@ -104,13 +105,15 @@ int main()
 
     matrix *m;
     try {
-         m = new matrix(ist);
+         m = new matrix(ist, std::cout);
     } catch (std::string& str) {
         std::cout << "Exception: " << str << '\n';
         return -1;
     }
+    fflush(stdout);
     m->calcMaxMin();
 
     std::cout << "sum of max from main diag and min from invdiag: "<< m->getSumMaxMin() << "\n";
+    delete m;
     return 0;
 }
