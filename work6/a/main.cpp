@@ -16,34 +16,35 @@ public:
         load(ss);
         std::cout << "loaded " << dnumbers.size() << " numbers\n";
         print(ost);
-        msgid = msgget(IPC_PRIVATE, IPC_CREAT|0666) ;
+        msgid = msgget(IPC_PRIVATE, IPC_CREAT|0666);
     };
     ~bitArray() {
         msgctl(msgid, IPC_RMID, NULL);
     }
 
-    void sum(int &p) {
-        auto mid = dnumbers.size()/2;
-        uint sum=0;
-        if(p == 0) {
-            for (int i=0; i < mid; i++) {
-                sum+=dnumbers[i];
-            }
-        } else {
-            for (int i=mid; i < dnumbers.size(); i++) {
-                sum+=dnumbers[i];
+    void sumByProc(int &p) {
+        int part = (dnumbers.size())/PROCESS_NUM;
+        int begin = p*(part);
+        int end;
+        int sum = 0;
 
-            }
-        }
+        if (p != PROCESS_NUM-1)
+            end = begin+part;
+        else
+            end = dnumbers.size();
+
+        while (begin!=end) 
+            sum+=dnumbers[begin++];
+
         m.mdata = sum;
         msgsnd(msgid, &m, sizeof (message), 0);
     }
 
     uint calcSum() {
-        uint _sum=0;
+        uint sum=0;
         for (int i=0; i < PROCESS_NUM; i++) {
             if(fork() ==0) {
-                sum(i);
+                sumByProc(i);
                 exit(0);
             }
             wait(NULL);
@@ -51,9 +52,9 @@ public:
         for (int i=0; i < PROCESS_NUM; i++) {
 
             msgrcv(msgid, &m, sizeof (message), 0, 0);
-            _sum+=m.mdata;
+            sum+=m.mdata;
         }
-        return _sum;
+        return sum;
     }
 
     void print(std::ostream &ost) {
@@ -81,7 +82,8 @@ private:
             if (buf.size() > bitsNumber)
                 bitsNumber = buf.size();
             a.push_back(buf);
-        }
+        }  
+        uint _sum=0;
         for (const auto &it : a) {
             std::bitset<32> binNum(it);
             dnumbers.push_back(binNum.to_ulong());
@@ -91,11 +93,11 @@ private:
 
 int main()
 {
-    std::string bitstr("101 010 1 0 1010101 1110010 1000001");
+    std::string bitstr("101 011 1 0 1010101 1110010 1000001 10 10101010");
     bitArray *a = new bitArray(bitstr, std::cout);
     fflush(stdout);
-    auto s = a.calcSum();
+    auto s = a->calcSum();
     std::cout << "sum of bit numbers: " << s << std::endl;
-
+    delete a;
     return 0;
 }
